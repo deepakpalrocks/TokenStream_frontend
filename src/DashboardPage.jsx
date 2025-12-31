@@ -54,22 +54,6 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
         salaryReceiptContract.totalSupply()
       ])
 
-      console.log('check this dude - Fetched reward data:')
-      console.log('check this dude - periodFinish:', rewardInfo.periodFinish.toString())
-      console.log('check this dude - rewardRate:', rewardInfo.rewardRate.toString())
-      console.log('check this dude - lastUpdateTime:', rewardInfo.lastUpdateTime.toString())
-      console.log('check this dude - rewardPerTokenStored:', rewardInfo.rewardPerTokenStored.toString())
-      console.log('check this dude - queuedRewards:', rewardInfo.queuedRewards.toString())
-      console.log('check this dude - userBalance:', balance.toString())
-      console.log('check this dude - totalSupply:', supply.toString())
-      
-      // Format rewardRate to see human-readable value
-      try {
-        const formattedRewardRate = ethers.formatUnits(rewardInfo.rewardRate, 18)
-        console.log('check this dude - rewardRate (formatted with 18 decimals):', formattedRewardRate)
-      } catch (e) {
-        console.log('check this dude - Error formatting rewardRate:', e)
-      }
 
       setRewardData({
         periodFinish: rewardInfo.periodFinish,
@@ -182,16 +166,7 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
 
   // Real-time earnings update effect
   useEffect(() => {
-    console.log('check this dude - Real-time earnings effect triggered', {
-      account: !!account,
-      rewardData: !!rewardData,
-      userTokenBalance: !!userTokenBalance,
-      totalSupply: !!totalSupply,
-      earnedAmount: !!earnedAmount
-    })
-    
     if (!account || !rewardData || !userTokenBalance || !totalSupply || !earnedAmount) {
-      console.log('check this dude - Missing required data, clearing interval')
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
@@ -201,15 +176,6 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
 
     const currentTime = Math.floor(Date.now() / 1000)
     const periodFinish = Number(rewardData.periodFinish)
-    
-    console.log('check this dude - Time check:', {
-      currentTime,
-      periodFinish,
-      periodActive: periodFinish > currentTime,
-      rewardRate: rewardData.rewardRate.toString(),
-      totalSupply: totalSupply.toString(),
-      userTokenBalance: userTokenBalance.toString()
-    })
 
     // Only update if period hasn't finished
     if (periodFinish > currentTime && rewardData.rewardRate > 0n && totalSupply > 0n && userTokenBalance > 0n) {
@@ -220,36 +186,15 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
       // userRewardPerSecond = rewardPerSecondPerToken * userBalance
       // Simplified: (rewardRate * userBalance) / (totalSupply * DENOMINATOR)
       
-      console.log('check this dude - Starting reward rate calculation')
-      
       const rewardRate = rewardData.rewardRate
       const userBalance = userTokenBalance
-      
-      console.log('check this dude - rewardRate (raw):', rewardRate.toString())
-      console.log('check this dude - userBalance (raw):', userBalance.toString())
-      console.log('check this dude - totalSupply (raw):', totalSupply.toString())
-      console.log('check this dude - DENOMINATOR:', DENOMINATOR.toString())
       
       // Calculate reward per second: (rewardRate * userBalance) / (totalSupply * DENOMINATOR)
       // This gives us reward per second in the reward token's native decimals (18 for USDT)
       const numerator = rewardRate * userBalance
       const denominator = totalSupply * DENOMINATOR
       
-      console.log('check this dude - numerator (rewardRate * userBalance):', numerator.toString())
-      console.log('check this dude - denominator (totalSupply * DENOMINATOR):', denominator.toString())
-      
       const calculatedRewardPerSecond = numerator / denominator
-      
-      console.log('check this dude - calculatedRewardPerSecond (raw BigInt):', calculatedRewardPerSecond.toString())
-      
-      // Format to see human-readable value
-      try {
-        const formattedRewardPerSecond = ethers.formatUnits(calculatedRewardPerSecond, 18)
-        console.log('check this dude - calculatedRewardPerSecond (formatted):', formattedRewardPerSecond)
-        console.log('check this dude - calculatedRewardPerSecond (as number):', parseFloat(formattedRewardPerSecond))
-      } catch (e) {
-        console.log('check this dude - Error formatting rewardPerSecond:', e)
-      }
       
       // Store reward per second for display
       setRewardPerSecond(calculatedRewardPerSecond)
@@ -258,9 +203,6 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
       // But we need to handle BigInt division properly
       // rewardPerInterval = rewardPerSecond / 10
       const rewardPerInterval = calculatedRewardPerSecond / 10n
-      
-      console.log('check this dude - rewardPerInterval (raw):', rewardPerInterval.toString())
-      console.log('check this dude - Calculation complete')
       
       // Initialize display earnings with current earned amount
       setDisplayEarnings(earnedAmount)
@@ -374,21 +316,15 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
 
   const formatRewardRate = (rewardPerSecondAmount) => {
     if (!account || !rewardPerSecondAmount) {
-      console.log('check this dude - formatRewardRate: account or amount is null', { account, rewardPerSecondAmount })
       return null
     }
     try {
-      console.log('check this dude - formatRewardRate input (raw):', rewardPerSecondAmount.toString())
       const formatted = ethers.formatUnits(rewardPerSecondAmount, 18)
-      console.log('check this dude - formatRewardRate formatted:', formatted)
       const num = parseFloat(formatted)
-      console.log('check this dude - formatRewardRate as number:', num)
       const result = num.toFixed(3)
-      console.log('check this dude - formatRewardRate result:', result)
       // Show 3 decimal digits for reward rate
       return result
     } catch (error) {
-      console.log('check this dude - formatRewardRate error:', error)
       return null
     }
   }

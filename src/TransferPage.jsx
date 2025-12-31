@@ -64,86 +64,113 @@ function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMod
       const salaryReceiptAddress = getSalaryReceiptAddress(chainId)
       const apiKey = ETHERSCAN_API_KEY || ''
 
-      // Use Etherscan API V2 endpoint
-      // V2 endpoint structure: https://api.etherscan.io/v2/api
-      // Note: V2 requires API key for most endpoints
-      const baseUrl = apiKey 
-        ? `https://${apiUrl}/v2/api`
-        : `https://${apiUrl}/api`
-      
-      // V2 endpoint for token transfers (same parameters as V1)
-      const params = new URLSearchParams({
-        module: 'account',
-        action: 'tokentx',
-        contractaddress: salaryReceiptAddress,
-        address: account,
-        startblock: '0',
-        endblock: '99999999',
-        sort: 'desc',
-        ...(apiKey && { apikey: apiKey })
-      })
-
-      const response = await fetch(`${baseUrl}?${params.toString()}`)
-
-      const data = await response.json()
-      
-      // Check for API errors
-      if (data.status === '0' && data.message) {
-        // If it's a deprecation error or API key error, fall back to contract events
-        if (data.message.includes('deprecated') || data.message.includes('NOTOK') || data.message.includes('Invalid API Key')) {
-          console.warn('Etherscan API error:', data.message, '- Falling back to contract events')
-          // Will fall through to contract events fallback below
-        } else {
-          throw new Error(data.message)
-        }
-      }
-      
-      if (data.status === '1' && data.result) {
-        // Filter transfers where user is the sender
-        const sentTransfers = data.result
-          .filter(tx => tx.from.toLowerCase() === account.toLowerCase())
-          .map(tx => ({
-            to: tx.to,
-            amount: ethers.formatUnits(tx.value, tx.tokenDecimal),
-            timestamp: new Date(parseInt(tx.timeStamp) * 1000).toLocaleDateString(),
-            txHash: tx.hash,
-          }))
-          .slice(0, 20) // Limit to 20 most recent
-
-        // Get unique addresses
-        const uniqueAddresses = [...new Set(sentTransfers.map(t => t.to.toLowerCase()))]
-        setTransferHistory(uniqueAddresses.map(addr => {
-          const transfers = sentTransfers.filter(t => t.to.toLowerCase() === addr)
-          return {
-            address: addr,
-            count: transfers.length,
-            lastTransfer: transfers[0].timestamp,
-            totalAmount: transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0).toFixed(2),
-          }
-        }))
+      if (!apiKey) {
+        console.warn('No Etherscan API key provided, falling back to contract events')
       } else {
-        // Fallback: Try to get from contract events directly
-        try {
-          const contract = new ethers.Contract(
-            salaryReceiptAddress,
-            SalaryReceiptTokenABI,
-            provider
-          )
+        // Try V2 API endpoints - different formats for different networks
+        // For Arbitrum (Arbiscan), V2 might use different format
+        // Format 1: /api/v2 (standard V2 format)
+        // Format 2: /v2/api (alternative V2 format)  
+        // Format 3: /api with version parameter (some networks)
+        const v2Formats = chainId === 42161 
+          ? [
+              `https://${apiUrl}/api/v2`,  // Try standard V2 first
+              `https://${apiUrl}/v2/api`,  // Alternative V2 format
+              `https://${apiUrl}/api`      // Fallback to V1 (might still work with API key)
+            ]
+          : [
+              `https://${apiUrl}/api/v2`,
+              `https://${apiUrl}/v2/api`
+            ]
+        
+        const params = new URLSearchParams({
+          module: 'account',
+          action: 'tokentx',
+          contractaddress: salaryReceiptAddress,
+          address: account,
+          startblock: '416357472', // Use specific start block
+          endblock: '99999999',
+          sort: 'desc',
+          apikey: apiKey
+        })
 
-          // Get Transfer events where from is the user
-          const filter = contract.filters.Transfer(account)
-          const events = await contract.queryFilter(filter, -1000) // Last 1000 blocks
+        // Try each V2 format
+        for (const baseUrl of v2Formats) {
+          try {
+            const fullUrl = `${baseUrl}?${params.toString()}`
+            console.log('Trying API endpoint:', fullUrl.replace(apiKey, 'HIDDEN_KEY'))
+            const response = await fetch(fullUrl)
+            const data = await response.json()
+            
+            console.log('API response status:', data.status, 'message:', data.message)
+            
+            // Check if successful
+            if (data.status === '1' && data.result) {
+              console.log('Success with endpoint:', baseUrl)
+              // Success! Process the data
+              const sentTransfers = data.result
+                .filter(tx => tx.from.toLowerCase() === account.toLowerCase())
+                .map(tx => ({
+                  to: tx.to,
+                  amount: ethers.formatUnits(tx.value, tx.tokenDecimal),
+                  timestamp: new Date(parseInt(tx.timeStamp) * 1000).toLocaleDateString(),
+                  txHash: tx.hash,
+                }))
+                .slice(0, 20)
 
-          const uniqueAddresses = [...new Set(events.map(e => e.args.to.toLowerCase()))]
-          setTransferHistory(uniqueAddresses.map(addr => ({
-            address: addr,
-            count: events.filter(e => e.args.to.toLowerCase() === addr).length,
-            lastTransfer: 'Recent',
-            totalAmount: 'N/A',
-          })))
-        } catch (err) {
-          console.error('Error fetching from contract:', err)
+              const uniqueAddresses = [...new Set(sentTransfers.map(t => t.to.toLowerCase()))]
+              setTransferHistory(uniqueAddresses.map(addr => {
+                const transfers = sentTransfers.filter(t => t.to.toLowerCase() === addr)
+                return {
+                  address: addr,
+                  count: transfers.length,
+                  lastTransfer: transfers[0].timestamp,
+                  totalAmount: transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0).toFixed(2),
+                }
+              }))
+              setLoadingHistory(false)
+              return
+            } else if (data.status === '0' && data.message) {
+              // If it's a deprecation/NOTOK error, try next format
+              if (data.message.includes('deprecated') || data.message.includes('NOTOK')) {
+                console.warn('Deprecated endpoint, trying next format:', data.message)
+                continue
+              }
+              // Other errors - stop trying
+              console.warn('Etherscan API error:', data.message)
+              break
+            }
+          } catch (error) {
+            console.error('Error trying API format:', baseUrl, error)
+            continue // Try next format
+          }
         }
+        
+        // If all V2 formats failed, fall through to contract events
+        console.warn('All V2 API formats failed, falling back to contract events')
+      }
+
+      // Fallback: Try to get from contract events directly
+      try {
+        const contract = new ethers.Contract(
+          salaryReceiptAddress,
+          SalaryReceiptTokenABI,
+          provider
+        )
+
+        // Get Transfer events where from is the user
+        const filter = contract.filters.Transfer(account)
+        const events = await contract.queryFilter(filter, -1000) // Last 1000 blocks
+
+        const uniqueAddresses = [...new Set(events.map(e => e.args.to.toLowerCase()))]
+        setTransferHistory(uniqueAddresses.map(addr => ({
+          address: addr,
+          count: events.filter(e => e.args.to.toLowerCase() === addr).length,
+          lastTransfer: 'Recent',
+          totalAmount: 'N/A',
+        })))
+      } catch (err) {
+        console.error('Error fetching from contract:', err)
       }
     } catch (error) {
       console.error('Error fetching transfer history:', error)

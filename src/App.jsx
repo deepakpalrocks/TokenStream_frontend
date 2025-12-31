@@ -10,7 +10,7 @@ import WalletModal from './WalletModal'
 import AccountSelectionModal from './AccountSelectionModal'
 import './App.css'
 
-const SAMPLE_ACCOUNT = '0xc615033c54E41CDb1D3b85F945DBe0c2FE9EAbd7'
+const SAMPLE_ACCOUNT = '0x609F7D3a9767521CD8DDA6349464fC6FD96E7213'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('/')
