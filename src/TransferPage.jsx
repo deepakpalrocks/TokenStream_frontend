@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { getSalaryReceiptAddress } from './addresses'
 import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
+import { TransferIcon, WalletIcon, AddressIcon, AmountIcon, SendIcon, HistoryIcon, EmptyIcon, CheckIcon, WarningIcon, RefreshIcon } from './Icons'
 import './TransferPage.css'
 
-function TransferPage({ account, provider, chainId }) {
+function TransferPage({ account, provider, chainId, onConnectWallet }) {
   const [toAddress, setToAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
@@ -197,6 +198,7 @@ function TransferPage({ account, provider, chainId }) {
   }
 
   const formatBalance = (balance) => {
+    if (!account) return '--'
     if (!balance) return '0'
     try {
       return ethers.formatUnits(balance, decimals)
@@ -210,25 +212,14 @@ function TransferPage({ account, provider, chainId }) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  if (!account) {
-    return (
-      <div className="transfer-page">
-        <div className="page-container">
-          <div className="connect-wallet-prompt">
-            <div className="prompt-icon">🔐</div>
-            <h2>Connect Your Wallet</h2>
-            <p>Please connect your wallet to transfer salary receipt tokens</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="transfer-page">
       <div className="page-container">
         <div className="page-header">
-          <h1>💸 Transfer Tokens</h1>
+          <div className="header-title">
+            <TransferIcon size={24} className="header-icon" />
+            <h1>Transfer</h1>
+          </div>
           <p className="page-subtitle">Send salary receipt tokens to any address</p>
         </div>
 
@@ -236,41 +227,47 @@ function TransferPage({ account, provider, chainId }) {
           <div className="transfer-card">
             <div className="balance-display-section">
               <div className="balance-label">Your Balance</div>
-              <div className="balance-amount">
-                {tokenBalance ? parseFloat(formatBalance(tokenBalance)).toLocaleString() : '0'} Tokens
+              <div className={`balance-amount ${!account ? 'placeholder' : ''}`}>
+                {account ? (
+                  tokenBalance ? parseFloat(formatBalance(tokenBalance)).toLocaleString() : '0'
+                ) : (
+                  '--'
+                )} {account ? 'Tokens' : ''}
               </div>
             </div>
 
             <div className="transfer-form">
               <div className="form-group">
                 <label htmlFor="toAddress">
-                  <span className="label-icon">📍</span>
+                  <AddressIcon size={16} className="label-icon" />
                   Recipient Address
                 </label>
                 <input
                   id="toAddress"
                   type="text"
-                  placeholder="0x..."
+                  placeholder={account ? "0x..." : "Connect wallet to transfer"}
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
                   className="address-input"
+                  disabled={!account}
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="amount">
-                  <span className="label-icon">💰</span>
+                  <AmountIcon size={16} className="label-icon" />
                   Amount
                 </label>
                 <input
                   id="amount"
                   type="number"
-                  placeholder="0.00"
+                  placeholder={account ? "0.00" : "--"}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="amount-input"
                   step="any"
                   min="0"
+                  disabled={!account}
                 />
                 <button 
                   className="max-button"
@@ -279,27 +276,43 @@ function TransferPage({ account, provider, chainId }) {
                       setAmount(formatBalance(tokenBalance))
                     }
                   }}
+                  disabled={!account}
                 >
                   MAX
                 </button>
               </div>
 
-              {error && <div className="error-message">❌ {error}</div>}
-              {success && <div className="success-message">✅ {success}</div>}
+              {error && (
+                <div className="error-message">
+                  <WarningIcon size={16} className="error-icon" />
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="success-message">
+                  <CheckIcon size={16} className="success-icon" />
+                  {success}
+                </div>
+              )}
 
               <button
                 className="transfer-button"
-                onClick={handleTransfer}
-                disabled={loading || !toAddress || !amount}
+                onClick={account ? handleTransfer : onConnectWallet}
+                disabled={!account || loading || !toAddress || !amount}
               >
-                {loading ? (
+                {!account ? (
+                  <>
+                    <WalletIcon size={18} />
+                    Connect Wallet
+                  </>
+                ) : loading ? (
                   <>
                     <span className="spinner"></span>
                     Processing...
                   </>
                 ) : (
                   <>
-                    <span>🚀</span>
+                    <SendIcon size={18} />
                     Transfer Tokens
                   </>
                 )}
@@ -309,13 +322,26 @@ function TransferPage({ account, provider, chainId }) {
 
           <div className="history-card">
             <div className="card-header">
-              <h2>📜 Transfer History</h2>
+              <div className="card-header-title">
+                <HistoryIcon size={18} className="header-icon" />
+                <h2>Transfer History</h2>
+              </div>
               <button 
                 className="refresh-button"
-                onClick={fetchTransferHistory}
-                disabled={loadingHistory}
+                onClick={account ? fetchTransferHistory : onConnectWallet}
+                disabled={!account || loadingHistory}
               >
-                {loadingHistory ? '🔄' : '↻'} Refresh
+                {!account ? (
+                  <>
+                    <WalletIcon size={14} />
+                    Connect Wallet
+                  </>
+                ) : (
+                  <>
+                    <RefreshIcon size={14} />
+                    Refresh
+                  </>
+                )}
               </button>
             </div>
 
@@ -326,7 +352,7 @@ function TransferPage({ account, provider, chainId }) {
                 {transferHistory.map((item, index) => (
                   <div key={index} className="history-item">
                     <div className="history-address">
-                      <span className="address-icon">👤</span>
+                      <AddressIcon size={16} className="address-icon" />
                       <span className="address-text">{formatAddress(item.address)}</span>
                       <span className="full-address" title={item.address}>{item.address}</span>
                     </div>
@@ -351,7 +377,7 @@ function TransferPage({ account, provider, chainId }) {
               </div>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">📭</div>
+                <EmptyIcon size={32} className="empty-icon" />
                 <p>No transfer history found</p>
                 <p className="empty-subtitle">Start transferring tokens to see history here</p>
               </div>

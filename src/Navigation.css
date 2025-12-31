@@ -65,16 +65,22 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.625rem 1rem;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.95rem;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
 }
 
 .nav-link:hover {
@@ -89,8 +95,70 @@
   border-color: rgba(100, 200, 255, 0.3);
 }
 
-.nav-icon {
-  font-size: 1.1rem;
+.nav-link.active .nav-icon {
+  opacity: 1;
+  color: #64c8ff;
+}
+
+.wallet-connected {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+  border-radius: 8px;
+  color: #51cf66;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wallet-connected:hover {
+  background: rgba(81, 207, 102, 0.2);
+  border-color: rgba(81, 207, 102, 0.5);
+  transform: translateY(-2px);
+}
+
+.wallet-indicator {
+  font-size: 0.6rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.wallet-address {
+  font-family: 'Courier New', monospace;
+}
+
+.connect-wallet-nav {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #4a90e2 0%, #64c8ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.connect-wallet-nav:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 200, 255, 0.4);
+}
+
+.connect-wallet-nav:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
@@ -109,6 +177,13 @@
   .nav-link {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+  
+  .connect-wallet-nav,
+  .wallet-connected {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
   }
 }
 

@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import { getSalaryReceiptAddress } from './addresses'
-import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
 import LandingPage from './LandingPage'
+import Navigation from './Navigation'
+import DashboardPage from './DashboardPage'
+import TransferPage from './TransferPage'
+import AdminPage from './AdminPage'
+import ContactPage from './ContactPage'
+import WalletModal from './WalletModal'
 import './App.css'
 
 function App() {
-  const [showLanding, setShowLanding] = useState(true)
+  const [currentPage, setCurrentPage] = useState('/')
   const [account, setAccount] = useState(null)
-  const [balance, setBalance] = useState(null)
-  const [tokenName, setTokenName] = useState('')
-  const [tokenSymbol, setTokenSymbol] = useState('')
-  const [decimals, setDecimals] = useState(18)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [provider, setProvider] = useState(null)
   const [chainId, setChainId] = useState(null)
+  const [walletModalOpen, setWalletModalOpen] = useState(false)
 
   // Check if wallet is connected on component mount
   useEffect(() => {
@@ -23,12 +24,22 @@ function App() {
     setupEventListeners()
   }, [])
 
-  // Fetch balance when account or chainId changes
+  // Update provider and chainId when account changes
   useEffect(() => {
-    if (account && provider && chainId) {
-      fetchBalance()
+    if (account && typeof window.ethereum !== 'undefined') {
+      const updateProvider = async () => {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum)
+          const network = await provider.getNetwork()
+          setProvider(provider)
+          setChainId(Number(network.chainId))
+        } catch (error) {
+          console.error('Error updating provider:', error)
+        }
+      }
+      updateProvider()
     }
-  }, [account, provider, chainId])
+  }, [account])
 
   const checkWalletConnection = async () => {
     if (typeof window.ethereum !== 'undefined') {
@@ -57,7 +68,6 @@ function App() {
           setError(null)
         } else {
           setAccount(null)
-          setBalance(null)
         }
       })
 
@@ -95,109 +105,78 @@ function App() {
     }
   }
 
-  const fetchBalance = async () => {
-    if (!account || !provider || !chainId) return
-
-    try {
-      setLoading(true)
-      setError(null)
-
-      const salaryReceiptAddress = getSalaryReceiptAddress(chainId)
-      
-      if (!salaryReceiptAddress || salaryReceiptAddress === '0x0000000000000000000000000000000000000000') {
-        setError('Salary Receipt Token address not configured for this network. Please update addresses.js')
-        setLoading(false)
-        return
-      }
-
-      const contract = new ethers.Contract(
-        salaryReceiptAddress,
-        SalaryReceiptTokenABI,
-        provider
-      )
-
-      // Fetch token info
-      const [name, symbol, decimalsValue, balanceValue] = await Promise.all([
-        contract.name(),
-        contract.symbol(),
-        contract.decimals(),
-        contract.balanceOf(account)
-      ])
-
-      setTokenName(name)
-      setTokenSymbol(symbol)
-      setDecimals(Number(decimalsValue))
-      setBalance(balanceValue)
-    } catch (error) {
-      console.error('Error fetching balance:', error)
-      setError('Failed to fetch balance. Make sure the contract is deployed on this network.')
-    } finally {
-      setLoading(false)
-    }
+  const disconnectWallet = () => {
+    setAccount(null)
+    setProvider(null)
+    setChainId(null)
+    setError(null)
   }
 
-  const formatBalance = (balance) => {
-    if (!balance) return '0'
-    try {
-      const formatted = ethers.formatUnits(balance, decimals)
-      return parseFloat(formatted).toLocaleString(undefined, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: decimals
-      })
-    } catch (error) {
-      return balance.toString()
-    }
+  const openWalletModal = () => {
+    setWalletModalOpen(true)
   }
 
-  const formatAddress = (address) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  const closeWalletModal = () => {
+    setWalletModalOpen(false)
   }
 
-  if (showLanding) {
-    return <LandingPage onLaunchApp={() => setShowLanding(false)} />
+
+  const handleNavigate = (path) => {
+    setCurrentPage(path)
   }
 
+  // Show landing page on root
+  if (currentPage === '/') {
+    return <LandingPage onLaunchApp={() => setCurrentPage('/dashboard')} />
+  }
+
+  // Render pages with navigation
   return (
     <div className="App">
-      <div className="app-header">
-        <button className="back-to-landing" onClick={() => setShowLanding(true)}>
-          ← Back to Home
-        </button>
-        <h1>TokenStream - Salary Receipt Balance</h1>
-      </div>
+      <Navigation 
+        currentPage={currentPage} 
+        onNavigate={handleNavigate}
+        account={account}
+        onConnectWallet={openWalletModal}
+        loading={loading}
+      />
       
-      {!account ? (
-        <div className="card">
-          <p>Connect your wallet to view your Salary Receipt Token balance</p>
-          <button onClick={connectWallet} disabled={loading}>
-            {loading ? 'Connecting...' : 'Connect Wallet'}
-          </button>
-        </div>
-      ) : (
-        <div className="card">
-          <div className="address-display">
-            Connected: {formatAddress(account)}
-          </div>
-          
-          {error && <div className="error">{error}</div>}
-          
-          {loading && <p>Loading...</p>}
-          
-          {!loading && balance !== null && (
-            <>
-              <div className="balance-display">
-                {formatBalance(balance)} {tokenSymbol}
-              </div>
-              {tokenName && (
-                <p>Token: {tokenName} ({tokenSymbol})</p>
-              )}
-              <button onClick={fetchBalance} style={{ marginTop: '1rem' }}>
-                Refresh Balance
-              </button>
-            </>
-          )}
-        </div>
+      <WalletModal
+        isOpen={walletModalOpen}
+        onClose={closeWalletModal}
+        onConnect={connectWallet}
+        onDisconnect={disconnectWallet}
+        account={account}
+        provider={provider}
+      />
+      
+      {currentPage === '/dashboard' && (
+        <DashboardPage 
+          account={account}
+          provider={provider}
+          chainId={chainId}
+          onConnectWallet={openWalletModal}
+        />
+      )}
+      
+      {currentPage === '/transfer' && (
+        <TransferPage 
+          account={account}
+          provider={provider}
+          chainId={chainId}
+          onConnectWallet={openWalletModal}
+        />
+      )}
+      
+      {currentPage === '/admin' && (
+        <AdminPage 
+          account={account}
+          provider={provider}
+        />
+      )}
+      
+      {currentPage === '/contact' && (
+        <ContactPage />
       )}
     </div>
   )

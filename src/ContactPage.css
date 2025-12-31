@@ -1,0 +1,234 @@
+.contact-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+  padding: 6rem 2rem 4rem;
+  color: #ffffff;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.header-icon {
+  color: #64c8ff;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: linear-gradient(135deg, #64c8ff 0%, #4a90e2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #64c8ff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Ensure gradient text works properly */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .page-header h1 {
+    color: transparent;
+  }
+}
+
+.page-header h1::selection {
+  -webkit-text-fill-color: #ffffff;
+  background: rgba(100, 200, 255, 0.3);
+  color: #ffffff;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.contact-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.contact-card {
+  position: relative;
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.contact-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(100, 200, 255, 0.4);
+  box-shadow: 0 12px 32px rgba(100, 200, 255, 0.2);
+}
+
+.card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.contact-card:hover .card-glow {
+  opacity: 1;
+}
+
+.email-glow {
+  background: radial-gradient(circle, rgba(100, 200, 255, 0.3) 0%, transparent 70%);
+}
+
+.linkedin-glow {
+  background: radial-gradient(circle, rgba(10, 102, 194, 0.3) 0%, transparent 70%);
+}
+
+.twitter-glow {
+  background: radial-gradient(circle, rgba(29, 161, 242, 0.3) 0%, transparent 70%);
+}
+
+.telegram-glow {
+  background: radial-gradient(circle, rgba(37, 150, 190, 0.3) 0%, transparent 70%);
+}
+
+.contact-icon {
+  color: #64c8ff;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.contact-card h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #64c8ff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.contact-value {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+}
+
+.address-value {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.contact-action {
+  font-size: 0.9rem;
+  color: rgba(100, 200, 255, 0.8);
+  font-weight: 500;
+  margin-top: 1rem;
+  transition: color 0.3s ease;
+}
+
+.contact-card:hover .contact-action {
+  color: #64c8ff;
+}
+
+.contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.info-section {
+  background: rgba(26, 26, 46, 0.6);
+  border: 1px solid rgba(100, 200, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.info-section:hover {
+  border-color: rgba(100, 200, 255, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(100, 200, 255, 0.1);
+}
+
+.section-icon {
+  color: #64c8ff;
+  opacity: 0.8;
+  margin-bottom: 0.75rem;
+}
+
+.info-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64c8ff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.info-section p {
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 768px) {
+  .contact-page {
+    padding: 5rem 1rem 2rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .contact-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .contact-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .contact-info {
+    grid-template-columns: 1fr;
+  }
+}
+
