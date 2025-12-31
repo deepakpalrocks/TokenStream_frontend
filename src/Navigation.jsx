@@ -1,7 +1,7 @@
 import './Navigation.css'
 import { DashboardIcon, TransferIcon, AdminIcon, ContactIcon } from './Icons'
 
-function Navigation({ currentPage, onNavigate, account, onConnectWallet, loading }) {
+function Navigation({ currentPage, onNavigate, account, onConnectWallet, loading, isSampleMode = false }) {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
     { path: '/transfer', label: 'Transfer', Icon: TransferIcon },
@@ -38,6 +38,7 @@ function Navigation({ currentPage, onNavigate, account, onConnectWallet, loading
             >
               <span className="wallet-indicator">●</span>
               <span className="wallet-address">{account.slice(0, 6)}...{account.slice(-4)}</span>
+              {isSampleMode && <span className="sample-badge">Sample</span>}
             </button>
           ) : (
             <button

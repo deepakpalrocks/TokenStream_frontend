@@ -27,6 +27,23 @@ npm run dev
 
 ## Configuration
 
+### Etherscan API Key (Optional but Recommended)
+
+For transfer history to work properly, you'll need an Etherscan API key:
+
+1. Get a free API key from:
+   - **Mainnet/Sepolia**: https://etherscan.io/apis
+   - **Arbitrum**: https://arbiscan.io/apis
+
+2. Create a `.env` file in the root directory:
+   ```bash
+   VITE_ETHERSCAN_API_KEY=your_api_key_here
+   ```
+
+3. The app will use Etherscan API V2 automatically when an API key is provided.
+
+**Note**: Without an API key, the app will fall back to reading transfer events directly from the contract (limited to recent blocks).
+
 ### Contract Addresses
 
 Edit `src/addresses.js` to add your deployed contract addresses:

@@ -139,6 +139,19 @@
   font-family: 'Courier New', monospace;
 }
 
+.sample-badge {
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffc107;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+}
+
 .connect-wallet-nav {
   padding: 0.75rem 1.25rem;
   background: linear-gradient(135deg, #4a90e2 0%, #64c8ff 100%);

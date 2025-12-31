@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import { getSalaryReceiptAddress } from './addresses'
+import { getSalaryReceiptAddress, ETHERSCAN_API_KEY } from './addresses'
 import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
 import { TransferIcon, WalletIcon, AddressIcon, AmountIcon, SendIcon, HistoryIcon, EmptyIcon, CheckIcon, WarningIcon, RefreshIcon } from './Icons'
 import './TransferPage.css'
 
-function TransferPage({ account, provider, chainId, onConnectWallet }) {
+function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMode = false }) {
   const [toAddress, setToAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
@@ -53,7 +53,7 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
 
     setLoadingHistory(true)
     try {
-      // Get network name for Etherscan API
+      // Get network name for Etherscan API V2
       const networkMap = {
         1: 'api.etherscan.io',
         11155111: 'api-sepolia.etherscan.io',
@@ -62,13 +62,41 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
 
       const apiUrl = networkMap[chainId] || 'api.etherscan.io'
       const salaryReceiptAddress = getSalaryReceiptAddress(chainId)
+      const apiKey = ETHERSCAN_API_KEY || ''
 
-      // Fetch transfer events from Etherscan API
-      const response = await fetch(
-        `https://${apiUrl}/api?module=account&action=tokentx&contractaddress=${salaryReceiptAddress}&address=${account}&startblock=0&endblock=99999999&sort=desc&apikey=YourApiKeyToken`
-      )
+      // Use Etherscan API V2 endpoint
+      // V2 endpoint structure: https://api.etherscan.io/v2/api
+      // Note: V2 requires API key for most endpoints
+      const baseUrl = apiKey 
+        ? `https://${apiUrl}/v2/api`
+        : `https://${apiUrl}/api`
+      
+      // V2 endpoint for token transfers (same parameters as V1)
+      const params = new URLSearchParams({
+        module: 'account',
+        action: 'tokentx',
+        contractaddress: salaryReceiptAddress,
+        address: account,
+        startblock: '0',
+        endblock: '99999999',
+        sort: 'desc',
+        ...(apiKey && { apikey: apiKey })
+      })
+
+      const response = await fetch(`${baseUrl}?${params.toString()}`)
 
       const data = await response.json()
+      
+      // Check for API errors
+      if (data.status === '0' && data.message) {
+        // If it's a deprecation error or API key error, fall back to contract events
+        if (data.message.includes('deprecated') || data.message.includes('NOTOK') || data.message.includes('Invalid API Key')) {
+          console.warn('Etherscan API error:', data.message, '- Falling back to contract events')
+          // Will fall through to contract events fallback below
+        } else {
+          throw new Error(data.message)
+        }
+      }
       
       if (data.status === '1' && data.result) {
         // Filter transfers where user is the sender
@@ -249,7 +277,7 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
                   className="address-input"
-                  disabled={!account}
+                  disabled={!account || isSampleMode}
                 />
               </div>
 
@@ -267,7 +295,7 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
                   className="amount-input"
                   step="any"
                   min="0"
-                  disabled={!account}
+                  disabled={!account || isSampleMode}
                 />
                 <button 
                   className="max-button"
@@ -276,7 +304,7 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
                       setAmount(formatBalance(tokenBalance))
                     }
                   }}
-                  disabled={!account}
+                  disabled={!account || isSampleMode}
                 >
                   MAX
                 </button>
@@ -297,13 +325,18 @@ function TransferPage({ account, provider, chainId, onConnectWallet }) {
 
               <button
                 className="transfer-button"
-                onClick={account ? handleTransfer : onConnectWallet}
-                disabled={!account || loading || !toAddress || !amount}
+                onClick={account && !isSampleMode ? handleTransfer : onConnectWallet}
+                disabled={!account || loading || !toAddress || !amount || isSampleMode}
               >
                 {!account ? (
                   <>
                     <WalletIcon size={18} />
                     Connect Wallet
+                  </>
+                ) : isSampleMode ? (
+                  <>
+                    <SendIcon size={18} />
+                    Not available in sample mode
                   </>
                 ) : loading ? (
                   <>

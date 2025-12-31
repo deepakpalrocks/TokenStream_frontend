@@ -66,3 +66,8 @@ export const getUSDTAddress = (chainId) => {
   return addresses.localhost.usdt;
 };
 
+// Etherscan API key - Get your free API key from https://etherscan.io/apis
+// For Arbitrum: https://arbiscan.io/apis
+// For Sepolia: https://sepolia.etherscan.io/apis
+export const ETHERSCAN_API_KEY = import.meta.env.VITE_ETHERSCAN_API_KEY || '';
+

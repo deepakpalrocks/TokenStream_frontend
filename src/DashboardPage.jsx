@@ -6,7 +6,7 @@ import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
 import { DashboardIcon, RewardsIcon, ClaimIcon, RefreshIcon, LockIcon, LightningIcon, InfoIcon, WalletIcon, EmptyIcon, CheckIcon, WarningIcon } from './Icons'
 import './DashboardPage.css'
 
-function DashboardPage({ account, provider, chainId, onConnectWallet }) {
+function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMode = false }) {
   const [earnedAmount, setEarnedAmount] = useState(null)
   const [displayEarnings, setDisplayEarnings] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -466,123 +466,135 @@ function DashboardPage({ account, provider, chainId, onConnectWallet }) {
                 <p>Loading earnings...</p>
               </div>
             ) : (
-              <>
-                <div className="rewards-display">
-                  <div className="rewards-amount">
-                    <div className="amount-label">USDT Earnings</div>
-                    <div className={`amount-value ${!account ? 'placeholder' : ''}`}>
-                      {formatRewards(currentEarnings)} {account ? 'USDT' : ''}
-                      {account && rewardPerSecond && rewardPerSecond > 0n && (
-                        <span className="reward-rate"> ({formatRewardRate(rewardPerSecond)})</span>
-                      )}
-                    </div>
-                    <div className={`amount-usd ${!account ? 'placeholder' : ''}`}>
-                      {account ? '≈' : ''} ${rewardsUSD}
-                    </div>
-                  </div>
-                </div>
-
-                {/* User Info Section */}
+              <div className="rewards-layout">
+                {/* Left Side - User Info Table */}
                 <div className="user-info-section">
-                  <div className="info-row">
-                    <span className="info-label">User Address:</span>
-                    <span className="info-value">{account ? `${account.slice(0, 6)}...${account.slice(-4)}` : '--'}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Monthly Salary:</span>
-                    <span className="info-value">
-                      {account && getMonthlySalary() ? (
-                        <>
-                          {getMonthlySalary()} USDT ($ {getMonthlySalary()})
-                        </>
-                      ) : (
-                        '--'
-                      )}
-                    </span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Yearly Salary:</span>
-                    <span className="info-value">
-                      {account && getYearlySalary() ? (
-                        <>
-                          {getYearlySalary()} USDT
-                        </>
-                      ) : (
-                        '--'
-                      )}
-                    </span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Expiration Date:</span>
-                    <span className="info-value">
-                      {account && getExpirationDate() ? getExpirationDate() : '--'}
-                    </span>
-                  </div>
+                  <table className="user-info-table">
+                    <tbody>
+                      <tr>
+                        <td className="info-label">User Address:</td>
+                        <td className="info-value">{account ? `${account.slice(0, 6)}...${account.slice(-4)}` : '--'}</td>
+                      </tr>
+                      <tr>
+                        <td className="info-label">Monthly Salary:</td>
+                        <td className="info-value">
+                          {account && getMonthlySalary() ? (
+                            <>
+                              {getMonthlySalary()} USDT ($ {getMonthlySalary()})
+                            </>
+                          ) : (
+                            '--'
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="info-label">Yearly Salary:</td>
+                        <td className="info-value">
+                          {account && getYearlySalary() ? (
+                            <>
+                              {getYearlySalary()} USDT
+                            </>
+                          ) : (
+                            '--'
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="info-label">Expiration Date:</td>
+                        <td className="info-value">
+                          {account && getExpirationDate() ? getExpirationDate() : '--'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                {error && (
-                  <div className="error-message">
-                    <WarningIcon size={18} className="error-icon" />
-                    {error}
+                {/* Right Side - Earnings Display and Claim Button */}
+                <div className="earnings-section">
+                  <div className="rewards-display">
+                    <div className="rewards-amount">
+                      <div className="amount-label">USDT Earnings</div>
+                      <div className={`amount-value ${!account ? 'placeholder' : ''}`}>
+                        {formatRewards(currentEarnings)} {account ? 'USDT' : ''}
+                        {account && rewardPerSecond && rewardPerSecond > 0n && (
+                          <span className="reward-rate"> ({formatRewardRate(rewardPerSecond)})</span>
+                        )}
+                      </div>
+                      <div className={`amount-usd ${!account ? 'placeholder' : ''}`}>
+                        {account ? '≈' : ''} ${rewardsUSD}
+                      </div>
+                    </div>
                   </div>
-                )}
 
-                {claimSuccess && (
-                  <div className="success-message">
-                    <CheckIcon size={18} className="success-icon" />
-                    {claimSuccess}
-                  </div>
-                )}
-
-                <button
-                  className="claim-button"
-                  onClick={account ? handleClaim : onConnectWallet}
-                  disabled={!account || claiming || (!hasRewards && account)}
-                >
-                  {!account ? (
-                    <>
-                      <WalletIcon size={18} />
-                      Connect Wallet
-                    </>
-                  ) : claiming ? (
-                    <>
-                      <span className="spinner"></span>
-                      Claiming...
-                    </>
-                  ) : (
-                    <>
-                      <ClaimIcon size={18} />
-                      Claim Earnings
-                    </>
+                  {error && (
+                    <div className="error-message">
+                      <WarningIcon size={18} className="error-icon" />
+                      {error}
+                    </div>
                   )}
-                </button>
 
-                {account && !hasRewards && !loading && (
-                  <div className="no-rewards-message">
-                    <EmptyIcon size={32} className="no-rewards-icon" />
-                    <p>No earnings available to claim</p>
-                    <p className="no-rewards-subtitle">Keep accumulating earnings by holding salary receipt tokens</p>
-                  </div>
-                )}
-
-                <button
-                  className="refresh-button"
-                  onClick={account ? fetchRewards : onConnectWallet}
-                  disabled={!account || loading}
-                >
-                  {!account ? (
-                    <>
-                      <WalletIcon size={16} />
-                      Connect Wallet
-                    </>
-                  ) : (
-                    <>
-                      <RefreshIcon size={16} />
-                      Refresh
-                    </>
+                  {claimSuccess && (
+                    <div className="success-message">
+                      <CheckIcon size={18} className="success-icon" />
+                      {claimSuccess}
+                    </div>
                   )}
-                </button>
-              </>
+
+                  <button
+                    className="claim-button"
+                    onClick={account && !isSampleMode ? handleClaim : onConnectWallet}
+                    disabled={!account || claiming || (!hasRewards && account) || isSampleMode}
+                  >
+                    {!account ? (
+                      <>
+                        <WalletIcon size={18} />
+                        Connect Wallet
+                      </>
+                    ) : isSampleMode ? (
+                      <>
+                        <ClaimIcon size={18} />
+                        Not available in sample mode
+                      </>
+                    ) : claiming ? (
+                      <>
+                        <span className="spinner"></span>
+                        Claiming...
+                      </>
+                    ) : (
+                      <>
+                        <ClaimIcon size={18} />
+                        Claim Earnings
+                      </>
+                    )}
+                  </button>
+
+                  {account && !hasRewards && !loading && (
+                    <div className="no-rewards-message">
+                      <EmptyIcon size={32} className="no-rewards-icon" />
+                      <p>No earnings available to claim</p>
+                      <p className="no-rewards-subtitle">Keep accumulating earnings by holding salary receipt tokens</p>
+                    </div>
+                  )}
+
+                  <button
+                    className="refresh-button"
+                    onClick={account ? fetchRewards : onConnectWallet}
+                    disabled={!account || loading}
+                  >
+                    {!account ? (
+                      <>
+                        <WalletIcon size={16} />
+                        Connect Wallet
+                      </>
+                    ) : (
+                      <>
+                        <RefreshIcon size={16} />
+                        Refresh
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 

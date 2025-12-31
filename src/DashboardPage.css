@@ -122,8 +122,14 @@
   letter-spacing: -0.01em;
 }
 
+.rewards-layout {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
 .rewards-display {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .rewards-amount {
@@ -179,38 +185,53 @@
 }
 
 .user-info-section {
-  margin-top: 2rem;
+  flex: 1;
   padding: 1.5rem;
   background: rgba(100, 200, 255, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(100, 200, 255, 0.15);
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
+.user-info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-info-table tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.info-row:last-child {
+.user-info-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.info-label {
+.user-info-table td {
+  padding: 0.875rem 0;
+  vertical-align: top;
+}
+
+.user-info-table .info-label {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  padding-right: 1.5rem;
+  white-space: nowrap;
 }
 
-.info-value {
+.user-info-table .info-value {
   font-size: 0.9rem;
   color: #64c8ff;
   font-weight: 500;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: right;
+}
+
+.earnings-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .loading-state {
@@ -237,7 +258,7 @@
   padding: 1rem 1.5rem;
   border-radius: 12px;
   font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -270,7 +291,7 @@
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .claim-button:hover:not(:disabled) {
@@ -294,8 +315,8 @@
 
 .no-rewards-message {
   text-align: center;
-  padding: 2rem;
-  margin-bottom: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .no-rewards-icon {
@@ -404,6 +425,25 @@
   
   .rewards-card {
     padding: 2rem 1.5rem;
+  }
+  
+  .rewards-layout {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .user-info-section,
+  .earnings-section {
+    flex: none;
+    width: 100%;
+  }
+  
+  .user-info-table .info-label {
+    padding-right: 1rem;
+  }
+  
+  .user-info-table .info-value {
+    text-align: left;
   }
   
   .amount-value {
