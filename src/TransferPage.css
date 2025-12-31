@@ -1,0 +1,365 @@
+.transfer-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+  padding: 6rem 2rem 4rem;
+  color: #ffffff;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #64c8ff 0%, #4a90e2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.transfer-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.transfer-card,
+.history-card {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.balance-display-section {
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(74, 144, 226, 0.1) 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+.balance-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.balance-amount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #64c8ff;
+}
+
+.transfer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.label-icon {
+  font-size: 1.1rem;
+}
+
+.address-input,
+.amount-input {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  transition: all 0.3s ease;
+}
+
+.address-input:focus,
+.amount-input:focus {
+  outline: none;
+  border-color: #64c8ff;
+  box-shadow: 0 0 0 3px rgba(100, 200, 255, 0.1);
+}
+
+.form-group:has(.amount-input) {
+  position: relative;
+}
+
+.max-button {
+  position: absolute;
+  right: 0.5rem;
+  top: 2.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(100, 200, 255, 0.2);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 6px;
+  color: #64c8ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.max-button:hover {
+  background: rgba(100, 200, 255, 0.3);
+}
+
+.transfer-button {
+  width: 100%;
+  padding: 1.2rem;
+  background: linear-gradient(135deg, #4a90e2 0%, #64c8ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.transfer-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(100, 200, 255, 0.4);
+}
+
+.transfer-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message,
+.success-message {
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.success-message {
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+  color: #51cf66;
+}
+
+.history-card {
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.refresh-button {
+  padding: 0.5rem 1rem;
+  background: rgba(100, 200, 255, 0.1);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 6px;
+  color: #64c8ff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: rgba(100, 200, 255, 0.2);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.history-item {
+  background: rgba(10, 10, 10, 0.4);
+  border: 1px solid rgba(100, 200, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  border-color: rgba(100, 200, 255, 0.3);
+  background: rgba(10, 10, 10, 0.6);
+}
+
+.history-address {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.address-icon {
+  font-size: 1.2rem;
+}
+
+.address-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #64c8ff;
+}
+
+.full-address {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: auto;
+}
+
+.history-details {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.5rem;
+}
+
+.connect-wallet-prompt {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.prompt-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.connect-wallet-prompt h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #64c8ff;
+}
+
+@media (max-width: 1024px) {
+  .transfer-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .transfer-page {
+    padding: 5rem 1rem 2rem;
+  }
+  
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .transfer-card,
+  .history-card {
+    padding: 1.5rem;
+  }
+  
+  .history-details {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
