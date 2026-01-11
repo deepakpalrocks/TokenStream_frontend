@@ -5,7 +5,7 @@ import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
 import { TransferIcon, WalletIcon, AddressIcon, AmountIcon, SendIcon, HistoryIcon, EmptyIcon, CheckIcon, WarningIcon, RefreshIcon } from './Icons'
 import './TransferPage.css'
 
-function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMode = false }) {
+function TransferPage({ account, provider, chainId, onConnectWallet, onSwitchNetwork, isSampleMode = false }) {
   const [toAddress, setToAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
@@ -267,6 +267,11 @@ function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMod
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
+  // Check if user is on the correct network (Arbitrum = 42161)
+  const ARBITRUM_CHAIN_ID = 42161
+  const isCorrectNetwork = chainId === ARBITRUM_CHAIN_ID
+  const needsNetworkSwitch = account && !isSampleMode && chainId && !isCorrectNetwork
+
   return (
     <div className="transfer-page">
       <div className="page-container">
@@ -343,6 +348,12 @@ function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMod
                   {error}
                 </div>
               )}
+              {needsNetworkSwitch && (
+                <div className="error-message" style={{ background: 'rgba(255, 193, 7, 0.1)', borderColor: 'rgba(255, 193, 7, 0.3)', color: '#ffc107' }}>
+                  <WarningIcon size={16} className="error-icon" />
+                  Please switch to Arbitrum One network to use this app
+                </div>
+              )}
               {success && (
                 <div className="success-message">
                   <CheckIcon size={16} className="success-icon" />
@@ -350,33 +361,44 @@ function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMod
                 </div>
               )}
 
-              <button
-                className="transfer-button"
-                onClick={account && !isSampleMode ? handleTransfer : onConnectWallet}
-                disabled={!account || loading || !toAddress || !amount || isSampleMode}
-              >
-                {!account ? (
-                  <>
-                    <WalletIcon size={18} />
-                    Connect Wallet
-                  </>
-                ) : isSampleMode ? (
-                  <>
-                    <SendIcon size={18} />
-                    Not available in sample mode
-                  </>
-                ) : loading ? (
-                  <>
-                    <span className="spinner"></span>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <SendIcon size={18} />
-                    Transfer Tokens
-                  </>
-                )}
-              </button>
+              {needsNetworkSwitch ? (
+                <button
+                  className="transfer-button"
+                  onClick={onSwitchNetwork}
+                  disabled={loading}
+                >
+                  <WalletIcon size={18} />
+                  Switch to Arbitrum One
+                </button>
+              ) : (
+                <button
+                  className="transfer-button"
+                  onClick={account && !isSampleMode ? handleTransfer : (!account ? onConnectWallet : undefined)}
+                  disabled={!account || loading || !toAddress || !amount || isSampleMode}
+                >
+                  {!account ? (
+                    <>
+                      <WalletIcon size={18} />
+                      Connect Wallet
+                    </>
+                  ) : isSampleMode ? (
+                    <>
+                      <SendIcon size={18} />
+                      Not available in sample mode
+                    </>
+                  ) : loading ? (
+                    <>
+                      <span className="spinner"></span>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <SendIcon size={18} />
+                      Transfer Tokens
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -386,23 +408,34 @@ function TransferPage({ account, provider, chainId, onConnectWallet, isSampleMod
                 <HistoryIcon size={18} className="header-icon" />
                 <h2>Transfer History</h2>
               </div>
-              <button 
-                className="refresh-button"
-                onClick={account ? fetchTransferHistory : onConnectWallet}
-                disabled={!account || loadingHistory}
-              >
-                {!account ? (
-                  <>
-                    <WalletIcon size={14} />
-                    Connect Wallet
-                  </>
-                ) : (
-                  <>
-                    <RefreshIcon size={14} />
-                    Refresh
-                  </>
-                )}
-              </button>
+              {needsNetworkSwitch ? (
+                <button 
+                  className="refresh-button"
+                  onClick={onSwitchNetwork}
+                  disabled={loading}
+                >
+                  <WalletIcon size={14} />
+                  Switch to Arbitrum One
+                </button>
+              ) : (
+                <button 
+                  className="refresh-button"
+                  onClick={account ? fetchTransferHistory : onConnectWallet}
+                  disabled={!account || loadingHistory}
+                >
+                  {!account ? (
+                    <>
+                      <WalletIcon size={14} />
+                      Connect Wallet
+                    </>
+                  ) : (
+                    <>
+                      <RefreshIcon size={14} />
+                      Refresh
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {loadingHistory ? (

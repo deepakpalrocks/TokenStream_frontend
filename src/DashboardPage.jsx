@@ -6,7 +6,7 @@ import SalaryReceiptTokenABI from './SalaryReceiptTokenABI.json'
 import { DashboardIcon, RewardsIcon, ClaimIcon, RefreshIcon, LockIcon, LightningIcon, InfoIcon, WalletIcon, EmptyIcon, CheckIcon, WarningIcon } from './Icons'
 import './DashboardPage.css'
 
-function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMode = false }) {
+function DashboardPage({ account, provider, chainId, onConnectWallet, onSwitchNetwork, isSampleMode = false }) {
   const [earnedAmount, setEarnedAmount] = useState(null)
   const [displayEarnings, setDisplayEarnings] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -376,6 +376,11 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
   const currentEarnings = displayEarnings !== null ? displayEarnings : earnedAmount
   const rewardsUSD = getRewardsInUSD(currentEarnings)
   const hasRewards = account && currentEarnings && currentEarnings > 0n
+  
+  // Check if user is on the correct network (Arbitrum = 42161)
+  const ARBITRUM_CHAIN_ID = 42161
+  const isCorrectNetwork = chainId === ARBITRUM_CHAIN_ID
+  const needsNetworkSwitch = account && !isSampleMode && chainId && !isCorrectNetwork
 
   return (
     <div className="dashboard-page">
@@ -469,6 +474,13 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
                     </div>
                   )}
 
+                  {needsNetworkSwitch && (
+                    <div className="error-message" style={{ background: 'rgba(255, 193, 7, 0.1)', borderColor: 'rgba(255, 193, 7, 0.3)', color: '#ffc107' }}>
+                      <WarningIcon size={18} className="error-icon" />
+                      Please switch to Arbitrum One network to use this app
+                    </div>
+                  )}
+
                   {claimSuccess && (
                     <div className="success-message">
                       <CheckIcon size={18} className="success-icon" />
@@ -476,33 +488,44 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
                     </div>
                   )}
 
-                  <button
-                    className="claim-button"
-                    onClick={account && !isSampleMode ? handleClaim : onConnectWallet}
-                    disabled={!account || claiming || (!hasRewards && account) || isSampleMode}
-                  >
-                    {!account ? (
-                      <>
-                        <WalletIcon size={18} />
-                        Connect Wallet
-                      </>
-                    ) : isSampleMode ? (
-                      <>
-                        <ClaimIcon size={18} />
-                        Not available in sample mode
-                      </>
-                    ) : claiming ? (
-                      <>
-                        <span className="spinner"></span>
-                        Claiming...
-                      </>
-                    ) : (
-                      <>
-                        <ClaimIcon size={18} />
-                        Claim Earnings
-                      </>
-                    )}
-                  </button>
+                  {needsNetworkSwitch ? (
+                    <button
+                      className="claim-button"
+                      onClick={onSwitchNetwork}
+                      disabled={loading}
+                    >
+                      <WalletIcon size={18} />
+                      Switch to Arbitrum One
+                    </button>
+                  ) : (
+                    <button
+                      className="claim-button"
+                      onClick={account && !isSampleMode ? handleClaim : (!account ? onConnectWallet : undefined)}
+                      disabled={!account || claiming || (!hasRewards && account) || isSampleMode}
+                    >
+                      {!account ? (
+                        <>
+                          <WalletIcon size={18} />
+                          Connect Wallet
+                        </>
+                      ) : isSampleMode ? (
+                        <>
+                          <ClaimIcon size={18} />
+                          Not available in sample mode
+                        </>
+                      ) : claiming ? (
+                        <>
+                          <span className="spinner"></span>
+                          Claiming...
+                        </>
+                      ) : (
+                        <>
+                          <ClaimIcon size={18} />
+                          Claim Earnings
+                        </>
+                      )}
+                    </button>
+                  )}
 
                   {account && !hasRewards && !loading && (
                     <div className="no-rewards-message">
@@ -512,23 +535,34 @@ function DashboardPage({ account, provider, chainId, onConnectWallet, isSampleMo
                     </div>
                   )}
 
-                  <button
-                    className="refresh-button"
-                    onClick={account ? fetchRewards : onConnectWallet}
-                    disabled={!account || loading}
-                  >
-                    {!account ? (
-                      <>
-                        <WalletIcon size={16} />
-                        Connect Wallet
-                      </>
-                    ) : (
-                      <>
-                        <RefreshIcon size={16} />
-                        Refresh
-                      </>
-                    )}
-                  </button>
+                  {needsNetworkSwitch ? (
+                    <button
+                      className="refresh-button"
+                      onClick={onSwitchNetwork}
+                      disabled={loading}
+                    >
+                      <WalletIcon size={16} />
+                      Switch to Arbitrum One
+                    </button>
+                  ) : (
+                    <button
+                      className="refresh-button"
+                      onClick={account ? fetchRewards : onConnectWallet}
+                      disabled={!account || loading}
+                    >
+                      {!account ? (
+                        <>
+                          <WalletIcon size={16} />
+                          Connect Wallet
+                        </>
+                      ) : (
+                        <>
+                          <RefreshIcon size={16} />
+                          Refresh
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             )}

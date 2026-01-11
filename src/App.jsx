@@ -142,32 +142,69 @@ function App() {
     setIsSampleMode(true)
     setAccount(SAMPLE_ACCOUNT)
     
-    // For sample mode, use a public RPC provider for read-only access
-    // Try to detect chain from wallet, otherwise default to mainnet
-    let detectedChainId = 1
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        const tempProvider = new ethers.BrowserProvider(window.ethereum)
-        const network = await tempProvider.getNetwork()
-        detectedChainId = Number(network.chainId)
-      } catch (error) {
-        console.log('Could not detect chain, defaulting to mainnet')
-      }
-    }
-    
-    // Use public RPC endpoints for read-only access
-    const rpcUrls = {
-      1: 'https://eth.llamarpc.com', // Mainnet
-      11155111: 'https://rpc.sepolia.org', // Sepolia
-      42161: 'https://arb1.arbitrum.io/rpc', // Arbitrum
-    }
-    
-    const rpcUrl = rpcUrls[detectedChainId] || rpcUrls[1]
+    // For sample mode, always use Arbitrum (42161) - contracts are deployed there
+    const ARBITRUM_CHAIN_ID = 42161
+    const rpcUrl = 'https://arb1.arbitrum.io/rpc'
     const provider = new ethers.JsonRpcProvider(rpcUrl)
     
-    setChainId(detectedChainId)
+    setChainId(ARBITRUM_CHAIN_ID)
     setProvider(provider)
     setCurrentPage('/dashboard')
+  }
+
+  const switchToArbitrum = async () => {
+    if (typeof window.ethereum === 'undefined') {
+      setError('Please install MetaMask or another Web3 wallet to switch networks')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const ARBITRUM_CHAIN_ID = 42161
+      const ARBITRUM_PARAMS = {
+        chainId: `0x${ARBITRUM_CHAIN_ID.toString(16)}`, // 0xA4B1
+        chainName: 'Arbitrum One',
+        nativeCurrency: {
+          name: 'ETH',
+          symbol: 'ETH',
+          decimals: 18,
+        },
+        rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+        blockExplorerUrls: ['https://arbiscan.io'],
+      }
+
+      try {
+        // Try to switch to Arbitrum
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: ARBITRUM_PARAMS.chainId }],
+        })
+      } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask
+        if (switchError.code === 4902) {
+          // Add Arbitrum network
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [ARBITRUM_PARAMS],
+          })
+        } else {
+          throw switchError
+        }
+      }
+
+      // Update provider and chainId after switching
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const network = await provider.getNetwork()
+      setProvider(provider)
+      setChainId(Number(network.chainId))
+    } catch (error) {
+      console.error('Error switching network:', error)
+      setError('Failed to switch network. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleUseRealAccount = () => {
@@ -225,6 +262,7 @@ function App() {
           provider={provider}
           chainId={chainId}
           onConnectWallet={openWalletModal}
+          onSwitchNetwork={switchToArbitrum}
           isSampleMode={isSampleMode}
         />
       )}
@@ -235,6 +273,7 @@ function App() {
           provider={provider}
           chainId={chainId}
           onConnectWallet={openWalletModal}
+          onSwitchNetwork={switchToArbitrum}
           isSampleMode={isSampleMode}
         />
       )}
